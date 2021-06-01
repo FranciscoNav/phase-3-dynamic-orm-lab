@@ -1,5 +1,6 @@
 require_relative "../config/environment.rb"
 require 'active_support/inflector'
+require 'pry'
 
 class InteractiveRecord
     def self.table_name
@@ -19,16 +20,12 @@ class InteractiveRecord
         column_names.compact
     end
     
-    self.column_names.each do |col_name|
-        attr_accessor col_name.to_sym
-    end
-    
     def initialize(options={})
         options.each do |property, value|
           self.send("#{property}=", value)
         end
     end
-    
+
     def save
         sql = "INSERT INTO #{table_name_for_insert} (#{col_names_for_insert}) VALUES (#{values_for_insert})"
         DB[:conn].execute(sql)
@@ -51,9 +48,11 @@ class InteractiveRecord
         self.class.column_names.delete_if {|col| col == "id"}.join(", ")
     end
 
-    def self.find_by(id)
-        sql = "SELECT * FROM #{self.table_name} WHERE id = '#{id}'"
-        rows = DB[:conn].execute(sql,id)
+    def self.find_by(atter)
+        atter_key = atter.keys[0]
+        atter_value = atter.values[0]
+        sql = "SELECT * FROM #{self.table_name} WHERE #{atter_key} = '#{atter_value}'"
+        rows = DB[:conn].execute(sql)
     end
     
     def self.find_by_name(name)
